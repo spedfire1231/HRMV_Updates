@@ -30,38 +30,32 @@ InsertText(Text) {
 SetTimer, CheckUpdate, 86400000 ; Перевіряти оновлення раз на день (86400000 мс)
 ^U:: ; Гаряча клавіша Ctrl + U для ручної перевірки
 CheckUpdate:
-MsgBox, , Діагностика, Початок перевірки оновлень...
-; Завантажуємо version.txt з Dropbox для перевірки версії
-UrlDownloadToFile, https://www.dropbox.com/scl/fi/tdkeo9o3iso46a2csouof/version.txt?rlkey=9az1e2jsiiwy01vi9glhnnb6e&st=xah53ahu&dl=1, %A_ScriptDir%\version.txt
+; Завантажуємо version.txt з GitHub для перевірки версії
+UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/refs/heads/main/version.txt, %A_ScriptDir%\version.txt
 if (ErrorLevel) { ; Якщо виникла помилка завантаження
-    MsgBox, 48, Помилка, Не вдалося завантажити version.txt. ErrorLevel: %ErrorLevel%. Перевірте URL або підключення до інтернету.
+    MsgBox, 48, Помилка, Не вдалося перевірити оновлення. Перевірте підключення до інтернету або URL.
     FileDelete, %A_ScriptDir%\version.txt ; Видаляємо тимчасовий файл, якщо він є
     return
 }
 
 FileRead, RemoteVersion, %A_ScriptDir%\version.txt
 if (RemoteVersion = "") { ; Якщо файл порожній або не зчитався
-    MsgBox, 48, Помилка, Файл version.txt порожній або некоректний. Перевірте вміст на сервері.
+    MsgBox, 48, Помилка, Файл version.txt порожній або некоректний. Перевірте вміст на GitHub.
     FileDelete, %A_ScriptDir%\version.txt
     return
 }
 
-; Логування для діагностики
-FormatTime, CurrentTime,, yyyy-MM-dd HH:mm:ss
-FileAppend, [%CurrentTime%] Зчитана версія з version.txt: %RemoteVersion%`n, %A_ScriptDir%\update_log.txt, UTF-8
-
 ; Очищаємо версію від зайвих пробілів і символів
 RemoteVersion := Trim(RemoteVersion)
-if (!RegExMatch(RemoteVersion, "^\d+\.\d+(\.\d+)?$")) { ; Перевірка формату версії (наприклад, "0.4" або "0.4.0")
-    MsgBox, 48, Помилка, Версія у version.txt має неправильний формат. Очікується формат X.Y або X.Y.Z (наприклад, 0.4). Зміст: %RemoteVersion%
+if (!RegExMatch(RemoteVersion, "^\d+\.\d+(\.\d+)?$")) { ; Перевірка формату версії (наприклад, "0.3" або "0.3.0")
+    MsgBox, 48, Помилка, Версія у version.txt має неправильний формат. Очікується формат X.Y або X.Y.Z (наприклад, 0.3).
     FileDelete, %A_ScriptDir%\version.txt
     return
 }
 
 LocalVersion := "0.3" ; Поточна версія твого скрипта (заміни на актуальну)
-FileAppend, [%CurrentTime%] Локальна версія: %LocalVersion%`n, %A_ScriptDir%\update_log.txt, UTF-8
 
-; Порівнюємо версії (додаємо числове порівняння для коректності)
+; Порівнюємо версії
 VersionCompare(version1, version2) {
     Loop, Parse, version1, .
         v1%A_Index% := A_LoopField
@@ -78,14 +72,13 @@ VersionCompare(version1, version2) {
 }
 
 if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
-    MsgBox, 36, Оновлення, Доступна нова версія %RemoteVersion% (з сайту). Оновити зараз?, 10
+    MsgBox, 36, Оновлення, Доступна нова версія %RemoteVersion% (з GitHub). Оновити зараз?, 10
     IfMsgBox, Yes
     {
-        MsgBox, , Діагностика, Початок завантаження оновленого скрипта...
-        ; Завантажуємо оновлений скрипт з Dropbox
-        UrlDownloadToFile, https://www.dropbox.com/scl/fi/fj5rvi0e2hxmvy4gh4cc2/HRMV.ahk?rlkey=o19k95jtupztlbmpbxix2r32t&st=1hjg5akd&dl=1, %A_ScriptDir%\new_version.ahk
+        ; Завантажуємо оновлений скрипт з GitHub
+        UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/refs/heads/main/HRMV.ahk, %A_ScriptDir%\new_version.ahk
         if (ErrorLevel) {
-            MsgBox, 48, Помилка, Не вдалося завантажити оновлення. ErrorLevel: %ErrorLevel%
+            MsgBox, 48, Помилка, Не вдалося завантажити оновлення.
             FileDelete, %A_ScriptDir%\new_version.ahk
             FileDelete, %A_ScriptDir%\version.txt
             return
@@ -94,7 +87,7 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         ; Створюємо резервну копію поточного файла
         FileCopy, %A_ScriptDir%\%A_ScriptName%, %A_ScriptDir%\backup_%A_ScriptName%, 1
         if (ErrorLevel) {
-            MsgBox, 48, Помилка, Не вдалося створити резервну копію. ErrorLevel: %ErrorLevel%
+            MsgBox, 48, Помилка, Не вдалося створити резервну копію.
             FileDelete, %A_ScriptDir%\new_version.ahk
             FileDelete, %A_ScriptDir%\version.txt
             return
@@ -103,7 +96,7 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         ; Замінюємо поточний файл новою версією
         FileMove, %A_ScriptDir%\new_version.ahk, %A_ScriptDir%\%A_ScriptName%, 1
         if (ErrorLevel) {
-            MsgBox, 48, Помилка, Не вдалося оновити файл. ErrorLevel: %ErrorLevel%
+            MsgBox, 48, Помилка, Не вдалося оновити файл.
             FileDelete, %A_ScriptDir%\version.txt
             return
         }
@@ -112,7 +105,6 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         FileDelete, %A_ScriptDir%\version.txt
 
         ; Перезапускаємо скрипт із новою версією
-        MsgBox, , Діагностика, Оновлення завершено, перезапуск скрипта...
         Run, %A_ScriptFullPath%
         ExitApp ; Закриваємо поточну версію
     }
