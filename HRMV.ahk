@@ -77,7 +77,7 @@ RemoteVersion := Trim(RemoteVersion)
 
 ; Просте порівняння символів у версіях
 if (RemoteVersion != LocalVersion) {
-    MsgBox, 36, Оновлення, Доступна нова версія скрипта - %RemoteVersion% . Оновити зараз?, 10
+    MsgBox, 36, Оновлення, Доступна нова версія скрипта - %RemoteVersion%Оновити зараз?, 10
     IfMsgBox, Yes
     {
         ; Завантажуємо оновлений скрипт з GitHub
