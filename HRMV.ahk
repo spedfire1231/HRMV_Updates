@@ -27,7 +27,6 @@ InsertText(Text) {
 #SingleInstance Force
 #NoEnv
 
-SetTimer, CheckUpdate, 300000 ; Перевіряти оновлення кожні 5 хвилин (300000 мс)
 ^U:: ; Гаряча клавіша Ctrl + U для ручної перевірки
 CheckUpdate:
 ; Спочатку перевіряємо локальний файл version.txt
@@ -78,7 +77,7 @@ RemoteVersion := Trim(RemoteVersion)
 
 ; Просте порівняння символів у версіях
 if (RemoteVersion != LocalVersion) {
-    MsgBox, 36, Оновлення, Доступна нова версія %RemoteVersion% (з GitHub). Оновити зараз?, 10
+    MsgBox, 36, Оновлення, Доступна нова версія скрипта - %RemoteVersion% . Оновити зараз?, 10
     IfMsgBox, Yes
     {
         ; Завантажуємо оновлений скрипт з GitHub
@@ -130,7 +129,7 @@ if (RemoteVersion != LocalVersion) {
         ; Зберігаємо локальний version.txt, якщо оновлення відхилено
     }
 } else {
-    MsgBox, 64, Оновлення, У вас остання версія %LocalVersion%!
+    MsgBox, 64, Оновлення, У вас остання версія скрипта - %LocalVersion%
     FileDelete, %A_ScriptDir%\remote_version.txt ; Видаляємо тимчасовий файл з віддаленою версією
     ; Зберігаємо локальний version.txt, якщо версія актуальна
 }
@@ -143,7 +142,7 @@ return
 
 CheckTime:
 FormatTime, CurrentTime,, HHmm
-if (CurrentTime = "1354") {
+if (CurrentTime = "1200") {
     Gui, Reminder:Destroy
     Gui, Reminder:+AlwaysOnTop +ToolWindow -Caption
     Gui, Reminder:Margin, 20, 20
