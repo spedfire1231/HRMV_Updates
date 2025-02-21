@@ -27,51 +27,57 @@ InsertText(Text) {
 #SingleInstance Force
 #NoEnv
 
-SetTimer, CheckUpdate, 86400000 ; Перевіряти оновлення раз на день (86400000 мс)
+SetTimer, CheckUpdate, 300000 ; Перевіряти оновлення кожні 5 хвилин (300000 мс)
 ^U:: ; Гаряча клавіша Ctrl + U для ручної перевірки
 CheckUpdate:
-; Завантажуємо version.txt з GitHub для перевірки версії
-UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/refs/heads/main/version.txt, %A_ScriptDir%\version.txt
-if (ErrorLevel) { ; Якщо виникла помилка завантаження
-    MsgBox, 48, Помилка, Не вдалося перевірити оновлення. Перевірте підключення до інтернету або URL.
-    FileDelete, %A_ScriptDir%\version.txt ; Видаляємо тимчасовий файл, якщо він є
-    return
-}
-
-FileRead, RemoteVersion, %A_ScriptDir%\version.txt
-if (RemoteVersion = "") { ; Якщо файл порожній або не зчитався
-    MsgBox, 48, Помилка, Файл version.txt порожній або некоректний. Перевірте вміст на GitHub.
-    FileDelete, %A_ScriptDir%\version.txt
-    return
-}
-
-; Очищаємо версію від зайвих пробілів і символів
-RemoteVersion := Trim(RemoteVersion)
-if (!RegExMatch(RemoteVersion, "^\d+\.\d+(\.\d+)?$")) { ; Перевірка формату версії (наприклад, "0.3" або "0.3.0")
-    MsgBox, 48, Помилка, Версія у version.txt має неправильний формат. Очікується формат X.Y або X.Y.Z (наприклад, 0.3).
-    FileDelete, %A_ScriptDir%\version.txt
-    return
-}
-
-LocalVersion := "0.5" ; Поточна версія твого скрипта (заміни на актуальну)
-
-; Порівнюємо версії
-VersionCompare(version1, version2) {
-    Loop, Parse, version1, .
-        v1%A_Index% := A_LoopField
-    Loop, Parse, version2, .
-        v2%A_Index% := A_LoopField
-    Loop, 3
-    {
-        if (v1%A_Index% > v2%A_Index%)
-            return 1
-        if (v1%A_Index% < v2%A_Index%)
-            return -1
+; Спочатку перевіряємо локальний файл version.txt
+IfExist, %A_ScriptDir%\version.txt
+{
+    FileRead, LocalVersion, %A_ScriptDir%\version.txt
+    if (LocalVersion = "") {
+        MsgBox, 48, Помилка, Локальний файл version.txt порожній або некоректний.
+        FileDelete, %A_ScriptDir%\version.txt
+        return
     }
-    return 0
+    LocalVersion := Trim(LocalVersion) ; Очищаємо від пробілів
+}
+else
+{
+    MsgBox, 48, Помилка, Локального файлу version.txt не знайдено. Створюємо новий з версією 0.0...
+    FileAppend, 0.0, %A_ScriptDir%\version.txt, UTF-8
+    LocalVersion := "0.0"
 }
 
-if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
+; Завантажуємо version.txt з GitHub для перевірки
+UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/refs/heads/main/version.txt, %A_ScriptDir%\remote_version.txt
+if (ErrorLevel) { ; Якщо виникла помилка завантаження
+    MsgBox, 48, Помилка, Не вдалося перевірити оновлення. Перевірте підключення до інтернету або URL. ErrorLevel: %ErrorLevel%
+    FileDelete, %A_ScriptDir%\remote_version.txt
+    ; Якщо є локальний version.txt, використовуємо його як резерв
+    IfExist, %A_ScriptDir%\version.txt
+    {
+        MsgBox, 64, Оновлення, Використано локальну версію через відсутність з’єднання з GitHub.
+        return
+    }
+    else
+    {
+        MsgBox, 48, Помилка, Локального файлу version.txt не знайдено, і завантаження з GitHub не вдалося.
+        return
+    }
+}
+
+FileRead, RemoteVersion, %A_ScriptDir%\remote_version.txt
+if (RemoteVersion = "") { ; Якщо файл порожній або не зчитався
+    MsgBox, 48, Помилка, Файл version.txt з GitHub порожній або некоректний. Перевірте вміст на GitHub.
+    FileDelete, %A_ScriptDir%\remote_version.txt
+    return
+}
+
+; Очищаємо версію від зайвих пробілів
+RemoteVersion := Trim(RemoteVersion)
+
+; Просте порівняння символів у версіях
+if (RemoteVersion != LocalVersion) {
     MsgBox, 36, Оновлення, Доступна нова версія %RemoteVersion% (з GitHub). Оновити зараз?, 10
     IfMsgBox, Yes
     {
@@ -80,7 +86,16 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         if (ErrorLevel) {
             MsgBox, 48, Помилка, Не вдалося завантажити оновлення.
             FileDelete, %A_ScriptDir%\new_version.ahk
-            FileDelete, %A_ScriptDir%\version.txt
+            FileDelete, %A_ScriptDir%\remote_version.txt
+            return
+        }
+
+        ; Завантажуємо оновлений version.txt з GitHub
+        UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/refs/heads/main/version.txt, %A_ScriptDir%\version.txt
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося завантажити оновлений version.txt.
+            FileDelete, %A_ScriptDir%\new_version.ahk
+            FileDelete, %A_ScriptDir%\remote_version.txt
             return
         }
 
@@ -89,7 +104,7 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         if (ErrorLevel) {
             MsgBox, 48, Помилка, Не вдалося створити резервну копію.
             FileDelete, %A_ScriptDir%\new_version.ahk
-            FileDelete, %A_ScriptDir%\version.txt
+            FileDelete, %A_ScriptDir%\remote_version.txt
             return
         }
 
@@ -97,12 +112,12 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
         FileMove, %A_ScriptDir%\new_version.ahk, %A_ScriptDir%\%A_ScriptName%, 1
         if (ErrorLevel) {
             MsgBox, 48, Помилка, Не вдалося оновити файл.
-            FileDelete, %A_ScriptDir%\version.txt
+            FileDelete, %A_ScriptDir%\remote_version.txt
             return
         }
 
         ; Видаляємо тимчасові файли
-        FileDelete, %A_ScriptDir%\version.txt
+        FileDelete, %A_ScriptDir%\remote_version.txt
 
         ; Перезапускаємо скрипт із новою версією
         Run, %A_ScriptFullPath%
@@ -111,11 +126,13 @@ if (VersionCompare(RemoteVersion, LocalVersion) > 0) {
     else
     {
         FileDelete, %A_ScriptDir%\new_version.ahk ; Видаляємо тимчасовий файл, якщо користувач відмовився
-        FileDelete, %A_ScriptDir%\version.txt ; Видаляємо version.txt, щоб уникнути використання застарілої версії
+        FileDelete, %A_ScriptDir%\remote_version.txt ; Видаляємо тимчасовий файл з віддаленою версією
+        ; Зберігаємо локальний version.txt, якщо оновлення відхилено
     }
 } else {
     MsgBox, 64, Оновлення, У вас остання версія %LocalVersion%!
-    FileDelete, %A_ScriptDir%\version.txt ; Видаляємо version.txt, щоб завжди перевіряти версію з сервера
+    FileDelete, %A_ScriptDir%\remote_version.txt ; Видаляємо тимчасовий файл з віддаленою версією
+    ; Зберігаємо локальний version.txt, якщо версія актуальна
 }
 
 return
