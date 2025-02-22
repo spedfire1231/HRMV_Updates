@@ -2,17 +2,32 @@
 #NoEnv
 #SingleInstance Force
 
-; Початкове привітання
 ShowWelcomeMessage() {
     Gui, +AlwaysOnTop +ToolWindow -Caption
     Gui, Margin, 20, 20
     Gui, Color, F5F5F5 ; Світло-сірий фон
     Gui, Font, c2E2E2E s16 Bold, Segoe UI
-    Gui, Add, Text, Center, Вітаю, HRMV-Script запущено!
+    
+    ; Додаємо зображення welcome.jpg із папки images
+    Gui, Add, Picture, x20 y20 w500 h400, %A_ScriptDir%\images\welcome.jpg
+    
+    ; Додаємо текст "Скрипт запущено" нижче картинки
+    Gui, Add, Text, x130 yp+220 Center w300, Скрипт запущено!
+    
+    ; Показуємо GUI, центруємо його на екрані
     Gui, Show, AutoSize Center
+    
+    ; Відтворюємо звук welcome.mp3 із папки sounds
+    SoundPlay, %A_ScriptDir%\sounds\welcome.mp3
+    if (ErrorLevel) {
+        MsgBox, 48, Помилка, Не вдалося відтворити файл welcome.mp3. Перевірте шлях до файлу.
+    }
+    
     Sleep, 2000
     Gui, Destroy
 }
+
+; Виклик функції при запуску скрипта
 ShowWelcomeMessage()
 
 ; Універсальна функція вставки тексту
@@ -165,9 +180,9 @@ Gui, Color, 2A2F3B ; Темно-синій фон
 Gui, Font, cFFFFFF s14 Bold, Segoe UI
 Gui, Add, Text, x15 y15 w370 Center, Підказки:`n
 Gui, Font, cDDE4E8 s10 Normal, Segoe UI
-Gui, Add, Text, x15 y50 w370, Alt + 1 - Меню підказок`nAlt + 2 - Коментар Zoho CRM`nAlt + 3 - Меню скриптів`nAlt + 4 - ЧаПи Казахстан`nAlt + 5 - ЧаПи Україна`nAlt + 8 - Редагування скриптів`nCtrl + 1 - Пріоритет + замітка`nCtrl + 2 - Меню прописів`nCtrl + X - Контекстне меню`nWin + W - Zoho CRM`nWin + O - Орбіта
+Gui, Add, Text, x15 y50 w370, Alt + 1 - Меню підказок`nAlt + 2 - Коментар Zoho CRM`nAlt + 3 - Меню скриптів`nAlt + 4 - ЧаПи Казахстан`nAlt + 5 - ЧаПи Україна`nAlt + 8 - Редагування скриптів`nCtrl + 1 - Пріоритет + замітка`nCtrl + 2 - Меню прописів адміна і КЗ`nCtrl + 3 - Меню прописів адміна і Україна`nCtrl + X - Контекстне меню`nCtrl + U - перевірити оновленя`nWin + W - Zoho CRM`nWin + O - Орбіта
 Gui, Font, cA0A0A0 s9 Italic, Segoe UI
-Gui, Add, Text, x15 y290 w370 Center, HRMV v3.0
+Gui, Add, Text, x15 y290 w370 Center, HRMV v0.3
 Gui, Show, w400 h330 Center, Підказки
 return
 
@@ -749,7 +764,7 @@ Gui, +AlwaysOnTop -SysMenu +ToolWindow
 Gui, Margin, 10, 10 ; Залишаємо відступи
 Gui, Color, 2A2F3B ; Темно-синій фон
 Gui, Font, cF5F5F5 s12 Bold, Segoe UI ; Кремовий текст для заголовка
-Gui, Add, Text, Center, Оберіть пропис:`n`n
+Gui, Add, Text, Center, Оберіть пропис адміна і Казахстан:`n`n
 Gui, Font, cF5F5F5 s10 Bold, Segoe UI ; М’якший шрифт для кнопок
 
 ; Масив причин (залишаємо без змін)
@@ -808,5 +823,73 @@ InseertText(Text) {
 CloseGuii:
 GuiiClose:
 GuiiEscape:
+Gui, Destroy
+return
+
+^3:: ; Змінили з ^2 на ^3 (Ctrl + 3)
+Gui, Destroy
+Gui, +AlwaysOnTop -SysMenu +ToolWindow
+Gui, Margin, 10, 10 ; Залишаємо відступи
+Gui, Color, 2A2F3B ; Темно-синій фон
+Gui, Font, cF5F5F5 s12 Bold, Segoe UI ; Кремовий текст для заголовка
+Gui, Add, Text, Center, Оберіть пропис адміна і Україна:`n`n
+Gui, Font, cF5F5F5 s10 Bold, Segoe UI ; М’якший шрифт для кнопок
+
+; Масив причин (оновлено українською мовою)
+Reasons := {}
+Reasons["PropisAdm"] := "Привіт, скажи будь ласка, люди почали навчання?"
+Reasons["PropisCh"] := "Вітаю, чи вдалося вам розпочати навчання? Адміністратор з вами зв’язався?"
+Reasons["StajLud"] := "Вітаю, чи вдалося вам розпочати роботу на сайті? Можливо, у вас є якісь труднощі? Як вам робота адміністратора?"
+Reasons["SputSait"] := "Привіт, людина дійшла до сайту?"
+Reasons["SputKolu"] := "Коли ви будете готові розпочати навчання?"
+Reasons["Oznayom"] := "Чи вдалося вам ознайомитися з відео? Усе вам підходить?"
+Reasons["EVoprosi"] := "Можливо, у вас є якісь питання або ви хочете щось уточнити?"
+Reasons["TochnoNema"] := "Можливо, у вас є ще запитання щодо вакансії?"
+Reasons["KoluPochatok"] := "Коли б ви бажали вийти на навчання та взагалі розпочати?"
+Reasons["YakPonyav"] := "Як ви зрозуміли свої обов’язки, чим ви будете займатися в робочому просторі?"
+Reasons["ChiGotov"] := "Чи готові ви розпочати найближчим часом?"
+Reasons["YakaRobota"] := "Яку роботу ви для себе шукаєте? Основну чи підробіток?"
+Reasons["ChiAktual"] := "Вітаю, для вас робота актуальна?"
+
+; Кнопки з групуванням, без рамок, м’якший фон
+Gui, Add, GroupBox, w700 h180 x10 y30 c808080, Прописи ; Світліший колір для GroupBox
+Gui, Add, Button, gInseeertReason vPropisAdm w320 h30 x30 y60 -Border BackgroundB0B0B0, Пропис адміна
+Gui, Add, Button, gInseeertReason vPropisCh w320 h30 x360 y60 -Border BackgroundB0B0B0, Пропис людини
+Gui, Add, Button, gInseeertReason vStajLud w320 h30 x30 y110 -Border BackgroundB0B0B0, Стажування людини
+Gui, Add, Button, gInseeertReason vSputSait w320 h30 x360 y110 -Border BackgroundB0B0B0, Спитати за сайт
+Gui, Add, Button, gInseeertReason vSputKolu w320 h30 x30 y160 -Border BackgroundB0B0B0, Спитати коли починає
+
+Gui, Add, GroupBox, w700 h220 x10 y210 c808080, Робочі моменти
+Gui, Add, Button, gInseeertReason vOznayom w320 h30 x30 y240 -Border BackgroundB0B0B0, Чи вдалось ознайомитись
+Gui, Add, Button, gInseeertReason vEVoprosi w320 h30 x360 y240 -Border BackgroundB0B0B0, Чи є питання
+Gui, Add, Button, gInseeertReason vTochnoNema w320 h30 x30 y290 -Border BackgroundB0B0B0, Чи є ще питання
+Gui, Add, Button, gInseeertReason vKoluPochatok w320 h30 x360 y290 -Border BackgroundB0B0B0, Коли бажає починати
+Gui, Add, Button, gInseeertReason vYakPonyav w320 h30 x30 y340 -Border BackgroundB0B0B0, Як зрозумів обов'язки
+Gui, Add, Button, gInseeertReason vChiGotov w320 h30 x360 y340 -Border BackgroundB0B0B0, Чи готовий працювати
+
+Gui, Add, GroupBox, w700 h80 x10 y430 c808080, Уточнення
+Gui, Add, Button, gInseeertReason vYakaRobota w320 h40 x30 y460 -Border BackgroundB0B0B0, Яку роботу шукає
+Gui, Add, Button, gInseeertReason vChiAktual w320 h40 x360 y460 -Border BackgroundB0B0B0, Чи актуальний пошук
+
+Gui, Add, Button, gCloseeGuii w200 h50 x270 y530 -Border BackgroundB0B0B0, Відмінити
+Gui, Show, AutoSize Center, Вибір причини
+return
+
+InseeertReason:
+InseeertText(Reasons[A_GuiControl])
+return
+
+; Функція для вставки тексту (додаємо її, якщо її немає в коді)
+InseeertText(Text) {
+    Gui, Destroy
+    Clipboard := Text
+    Send, ^v
+    Sleep, 50
+    Clipboard := ""
+}
+
+CloseeGuii:
+GuiiClosee:
+GuiiEscapee:
 Gui, Destroy
 return
