@@ -657,7 +657,7 @@ Gui, Destroy
 return
 
 
-!8::
+!8:: ; Залишаємо гарячу клавішу Alt + 8 (якщо це підходить, інакше змінимо)
 Gui, Destroy
 Gui, +AlwaysOnTop -SysMenu +ToolWindow
 Gui, Margin, 15, 15
@@ -714,7 +714,7 @@ if (!SelectedTechName) {
 }
 
 FilePath := A_ScriptDir "\scripts\" SelectedTechName ".txt"
-if !FileExist(FilePath)
+if (!FileExist(FilePath))
     FileAppend,, %FilePath%, UTF-8
 FileRead, ScriptText, %FilePath%
 Gui, Destroy
@@ -730,7 +730,7 @@ Gui, Show, AutoSize Center, Редагування: %SelectedScript%
 return
 
 SaveScript:
-Gui, Submit, NoHide
+Gui, Submit
 ; Знаходимо технічну назву за зрозумілою назвою для збереження
 SelectedTechName := ""
 for Key, Value in ScriptNames {
@@ -748,7 +748,7 @@ FilePath := A_ScriptDir "\scripts\" SelectedTechName ".txt"
 FileDelete, %FilePath%
 FileAppend, %EditedScriptText%, %FilePath%, UTF-8
 MsgBox, 64, Успішно!, Текст для скрипту %SelectedScript% збережено!
-Gui, Destroy
+Gui, Destroy ; Гарантуємо закриття GUI
 return
 
 ; Закриття GUI
@@ -757,6 +757,7 @@ GuiClosse:
 GuiEsscape:
 Gui, Destroy
 return
+
 
 ^2::
 Gui, Destroy
