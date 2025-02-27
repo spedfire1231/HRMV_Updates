@@ -2,6 +2,25 @@
 #NoEnv
 #SingleInstance Force
 
+CheckUpdates:
+; Спочатку перевіряємо локальний файл version.txt
+IfExist, %A_ScriptDir%\version.txt
+{
+    FileRead, LocalVersion, %A_ScriptDir%\version.txt
+    if (LocalVersion = "") {
+        MsgBox, 48, Помилка, Локальний файл version.txt порожній або некоректний.
+        FileDelete, %A_ScriptDir%\version.txt
+        return
+    }
+    LocalVersion := Trim(LocalVersion) ; Очищаємо від пробілів
+}
+else
+{
+    MsgBox, 48, Помилка, Локального файлу version.txt не знайдено. Створюємо новий з версією 0.0...
+    FileAppend, 0.0, %A_ScriptDir%\version.txt, UTF-8
+    LocalVersion := "0.0"
+}
+
 ; Перевірка і створення папок, завантаження файлів при запуску
 SetupFoldersAndFiles() {
     ; Перевірка наявності папки images
