@@ -2,6 +2,41 @@
 #NoEnv
 #SingleInstance Force
 
+; Перевірка і створення папок, завантаження файлів при запуску
+SetupFoldersAndFiles() {
+    ; Перевірка наявності папки images
+    if (!InStr(FileExist(A_ScriptDir "\images"), "D")) {
+        FileCreateDir, %A_ScriptDir%\images
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося створити папку images. Перевірте права доступу.
+            return
+        }
+        ; Завантаження welcome.jpg з GitHub у папку images
+        UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/main/welcome.jpg, %A_ScriptDir%\images\welcome.jpg
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося завантажити welcome.jpg. Перевірте підключення до інтернету або URL.
+        }
+    }
+
+    ; Перевірка наявності папки sounds
+    if (!InStr(FileExist(A_ScriptDir "\sounds"), "D")) {
+        FileCreateDir, %A_ScriptDir%\sounds
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося створити папку sounds. Перевірте права доступу.
+            return
+        }
+        ; Завантаження welcome.mp3 з GitHub у папку sounds
+        UrlDownloadToFile, https://raw.githubusercontent.com/spedfire1231/HRMV_Updates/main/welcome.mp3, %A_ScriptDir%\sounds\welcome.mp3
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося завантажити welcome.mp3. Перевірте підключення до інтернету або URL.
+        }
+    }
+}
+
+; Виклик функції при запуску скрипта
+SetupFoldersAndFiles()
+
+; Решта вашого коду (наприклад, ShowWelcomeMessage, оновлення, макроси тощо)
 ShowWelcomeMessage() {
     Gui, +AlwaysOnTop +ToolWindow -Caption
     Gui, Margin, 20, 20
@@ -18,6 +53,10 @@ ShowWelcomeMessage() {
     Gui, Show, AutoSize Center
     
     ; Відтворюємо звук welcome.mp3 із папки sounds
+    if (!FileExist(A_ScriptDir "\sounds\welcome.mp3")) {
+        MsgBox, 48, Помилка, Файл welcome.mp3 не знайдено в папці sounds. Перевірте шлях.
+        return
+    }
     SoundPlay, %A_ScriptDir%\sounds\welcome.mp3
     if (ErrorLevel) {
         MsgBox, 48, Помилка, Не вдалося відтворити файл welcome.mp3. Перевірте шлях до файлу.
@@ -29,6 +68,8 @@ ShowWelcomeMessage() {
 
 ; Виклик функції при запуску скрипта
 ShowWelcomeMessage()
+
+; ... решта вашого коду (наприклад, оновлення, макроси, редагування скриптів тощо) ...
 
 ; Універсальна функція вставки тексту
 InsertText(Text) {
