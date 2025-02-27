@@ -31,6 +31,15 @@ SetupFoldersAndFiles() {
             MsgBox, 48, Помилка, Не вдалося завантажити welcome.mp3. Перевірте підключення до інтернету або URL.
         }
     }
+
+    ; Перевірка наявності папки scripts
+    if (!InStr(FileExist(A_ScriptDir "\scripts"), "D")) {
+        FileCreateDir, %A_ScriptDir%\scripts
+        if (ErrorLevel) {
+            MsgBox, 48, Помилка, Не вдалося створити папку scripts. Перевірте права доступу.
+            return
+        }
+    }
 }
 
 ; Виклик функції при запуску скрипта
